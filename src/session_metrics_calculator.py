@@ -74,18 +74,16 @@ def calculate_session_metrics(df, inactivity_threshold=3000):
     return session_df, overall_metrics, daily_session_metrics
 
 
-def load_and_preprocess_data(spark, filepath):
-    df = spark.read.parquet(filepath)
+def preprocess_data(df):
     df = df.withColumn("timestamp", col("timestamp").cast("timestamp"))
     return df
 
 
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("SessionMetricsCalculator").getOrCreate()
-    df = load_and_preprocess_data(
-        spark, filepath="data/user_interactions_sample.parquet"
-    )
-    session_df, overall, daily = calculate_session_metrics(df=df)
+    df = spark.read.parquet("data/user_interactions_sample.parquet")
+    df = preprocess_data(df)
+    session_df, overall, daily = calculate_session_metrics(df)
 
     print("Session Data Frame")
     session_df.show(20)

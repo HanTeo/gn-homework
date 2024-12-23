@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, date
 from pyspark.sql import SparkSession
 from chispa.dataframe_comparer import assert_df_equality
 
@@ -54,6 +54,7 @@ def test_calculate_sessions_simple(spark):
         "session_end",
         "session_duration_sec",
         "actions_in_session",
+        "date",
     ]
     expected_data = [
         (
@@ -63,6 +64,7 @@ def test_calculate_sessions_simple(spark):
             datetime(2023, 1, 1, 10, 5, 0),
             300,
             2,
+            date(2023, 1, 1),
         ),
         (
             "user1",
@@ -71,6 +73,7 @@ def test_calculate_sessions_simple(spark):
             datetime(2023, 1, 1, 11, 0, 0),
             0,
             1,
+            date(2023, 1, 1),
         ),
         (
             "user2",
@@ -79,6 +82,7 @@ def test_calculate_sessions_simple(spark):
             datetime(2023, 1, 1, 8, 0, 0),
             0,
             1,
+            date(2023, 1, 1),
         ),
     ]
     expected_df = spark.createDataFrame(expected_data, columns)
@@ -86,7 +90,6 @@ def test_calculate_sessions_simple(spark):
     assert_df_equality(
         result_df,
         expected_df,
-        ignore_column_order=True,
         ignore_row_order=True,
         ignore_nullable=True,
     )
