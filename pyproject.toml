@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "chispa>=0.10.1",
     "pyarrow>=18.1.0",
     "pyspark>=3.5.3",
+    "pytest>=8.3.4",
 ]
