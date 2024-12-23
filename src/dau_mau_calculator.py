@@ -2,8 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date, date_format, approx_count_distinct
 
 
-def load_and_preprocess_data(spark, filepath):
-    df = spark.read.parquet(filepath)
+def preprocess_data(df):
     df = df.withColumn("date", to_date(col("timestamp")))
     df = df.withColumn("month", date_format(col("timestamp"), "yyyy-MM"))
     return df
@@ -24,9 +23,9 @@ def calculate_mau(df):
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("DAU_MAU_Calculation").getOrCreate()
 
-    df = load_and_preprocess_data(
-        spark, filepath="data/user_interactions_sample.parquet"
-    )
+    df = spark.read.parquet("data/user_interactions_sample.parquet")
+
+    df = preprocess_data(spark)
 
     dau = calculate_dau(df)
     print("Daily Active Users (DAU):")

@@ -1,8 +1,9 @@
 import pytest
 from pyspark.sql import SparkSession
 from chispa.dataframe_comparer import assert_df_equality
-from datetime import datetime
-from src.dau_mau_calculator import calculate_dau, calculate_mau
+from datetime import datetime, date
+from src.dau_mau_calculator import calculate_dau, preprocess_data
+from pyspark.sql.functions import col, to_date, date_format, approx_count_distinct
 
 
 @pytest.fixture(scope="session")
@@ -24,15 +25,15 @@ def test_calculate_dau(spark):
 
     df = spark.createDataFrame(input_data, ["user_id", "timestamp"])
 
+    df = preprocess_data(df)
+
     result_df = calculate_dau(df)
 
-    expected_data = [("2023-01-01", 2), ("2023-01-02", 2)]
+    expected_data = [(date(2023, 1, 1), 2), (date(2023, 1, 2), 2)]
     expected_df = spark.createDataFrame(expected_data, ["date", "daily_active_users"])
 
     assert_df_equality(
-        result_df,
         expected_df,
-        ignore_column_order=True,
-        ignore_row_order=True,
+        result_df,
         ignore_nullable=True,
     )
