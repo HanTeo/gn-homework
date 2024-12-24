@@ -88,10 +88,10 @@ if __name__ == "__main__":
     df = preprocess_data(df)
     session_df, overall, daily = calculate_session_metrics(df)
 
-    print("Session Data Frame")
+    print("Session Data Frame:")
     session_df.show(20)
-    print("Overall Metrics")
+    print("Overall Metrics:")
     overall.show()
-    print("Session Metrics")
+    print("Session Metrics:")
     daily.show(20)
     spark.stop()
