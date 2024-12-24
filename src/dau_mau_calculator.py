@@ -19,7 +19,11 @@ def calculate_mau(df):
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("DAU_MAU_Calculation").getOrCreate()
 
-    df = spark.read.parquet("data/user_interactions_sample.parquet")
+    df = (
+        spark.read.parquet("data/user_interactions_sample.parquet")
+        .select("date", "user_id")
+        .repartition("date")
+    )
 
     dau = calculate_dau(df)
     print("Daily Active Users (DAU):")

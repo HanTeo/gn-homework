@@ -50,7 +50,9 @@ def test_calculate_mau(spark):
     result_df = calculate_mau(df)
 
     expected_data = [("2023-01", 2), ("2023-02", 3)]
-    expected_df = spark.createDataFrame(expected_data, ["month", "monthly_active_users"])
+    expected_df = spark.createDataFrame(
+        expected_data, ["month", "monthly_active_users"]
+    )
 
     assert_df_equality(
         expected_df,

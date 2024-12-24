@@ -17,27 +17,30 @@ from pyspark.sql.window import Window
 def calculate_session_metrics(df, inactivity_threshold=3000):
     window_spec = Window.partitionBy("user_id").orderBy("timestamp")
 
-    df = df.withColumn("prev_timestamp", lag("timestamp").over(window_spec))
-    df = df.withColumn(
-        "time_diff", unix_timestamp("timestamp") - unix_timestamp("prev_timestamp")
+    df = (
+        df.withColumn("prev_timestamp", lag("timestamp").over(window_spec))
+        .withColumn(
+            "time_diff", unix_timestamp("timestamp") - unix_timestamp("prev_timestamp")
+        )
+        .withColumn(
+            "new_session",
+            when(
+                (col("time_diff") >= inactivity_threshold) | col("time_diff").isNull(),
+                1,
+            ).otherwise(0),
+        )
+        .withColumn("session_id", spark_sum("new_session").over(window_spec))
     )
-
-    df = df.withColumn(
-        "new_session",
-        when(
-            (col("time_diff") >= inactivity_threshold) | col("time_diff").isNull(), 1
-        ).otherwise(0),
-    )
-
-    df = df.withColumn("session_id", spark_sum("new_session").over(window_spec))
 
     session_window = Window.partitionBy("user_id", "session_id")
 
-    df = df.withColumn("session_start", spark_min("timestamp").over(session_window))
-    df = df.withColumn("session_end", spark_max("timestamp").over(session_window))
-    df = df.withColumn(
-        "session_duration_sec",
-        unix_timestamp("session_end") - unix_timestamp("session_start"),
+    df = (
+        df.withColumn("session_start", spark_min("timestamp").over(session_window))
+        .withColumn("session_end", spark_max("timestamp").over(session_window))
+        .withColumn(
+            "session_duration_sec",
+            unix_timestamp("session_end") - unix_timestamp("session_start"),
+        )
     )
 
     session_action_counts = df.groupBy("user_id", "session_id").agg(
